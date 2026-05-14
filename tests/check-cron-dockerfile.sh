@@ -16,7 +16,15 @@ if grep -q 'ADD crontab' "$dockerfile"; then
   exit 1
 fi
 
-grep -A8 '^  cron-prod:' "$compose_file" | grep -q 'depends_on:'
-grep -A8 '^  cron-prod:' "$compose_file" | grep -q 'init-environment-prod'
+cron_prod_block="$(
+  awk '
+    $0 ~ /^  cron-prod:/ { in_cron=1; next }
+    in_cron && $0 ~ /^  [^[:space:]]/ { in_cron=0 }
+    in_cron { print }
+  ' "$compose_file"
+)"
+
+grep -q 'depends_on:' <<<"$cron_prod_block"
+grep -q 'init-environment-prod' <<<"$cron_prod_block"
 
 echo "PASS cron Dockerfile uses the tracked cronlist and runs cron in foreground"
