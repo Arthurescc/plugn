@@ -115,4 +115,5 @@ services:
       - ~/.composer-docker/cache:/root/.composer/cache:delegated
       # Mount source-code for development
       - ./:/app
-  
+    depends_on:
+      - "init-environment-prod"
